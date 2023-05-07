@@ -1,4 +1,4 @@
-from flask import Flask ,render_template,request,redirect
+from flask import Flask ,render_template,request,redirect,flash
 import json
 from flask_mysqldb import MySQL
 import MySQLdb.cursors
@@ -37,6 +37,30 @@ def data_for_name():
         
 @app.route('/updatedata',methods=['POST','GET'])
 def updatedata():
+    if request.method == "POST":
+        email = request.form['email']
+        password = request.form['password']
+        cpassword = request.form['Cpassword']
+
+        if(password!=cpassword):
+            flash('password and confirm password not match','danger')
+            return redirect('/updatedata')
+        
+        cursor = mysql.connection.cursor()
+        getValue = cursor.execute("SELECT * FROM accounts WHERE email=%s",[email])
+        if getValue>0:
+            user = cursor.fetchone()
+            cursor = mysql.connection.cursor()
+            cursor.execute("UPDATE user SET password=%s WHERE email=%s",(password,email))
+            mysql.connection.commit()
+            cursor.close()
+            flash('Your password updataed !!','success')
+            return redirect('/data')
+         
+          
+
+
+
     return render_template('updatepassword.html')
 
 if __name__ =="__main__":
